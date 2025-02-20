@@ -1,0 +1,43 @@
+#!/bin/bash
+
+DIR_NAME="$(dirname "$0")"
+
+# Usage function
+usage() {
+  echo "Usage: $0 -c <CONFIG_FILE>"
+  exit 1
+}
+
+# Parse parameter -c 
+while getopts "c:" opt; do
+  case ${opt} in
+    c )
+      CONFIG_FILE=$OPTARG
+      ;;
+    * )
+      usage
+      ;;
+  esac
+done
+
+if [ ! -f "$CONFIG_FILE" ] ; then
+  usage
+fi
+
+# Call runmysql with -s flag to ensure MySQL is running and display its status.
+bash "$DIR_NAME/runmysql" -s
+
+# Create the database if it does not exist.
+sudo mysql --defaults-extra-file="$CONFIG_FILE" --execute="CREATE DATABASE IF NOT EXISTS my_price_tracker_db;"
+
+# Create the user 'myPriceTrackerRoot' with password 'myPriceTrackerRoot' if not exists,
+# grant privileges on the database and flush permissions.
+sudo mysql --defaults-extra-file="$CONFIG_FILE" --execute="CREATE USER IF NOT EXISTS 'myPriceTrackerRoot'@'localhost' IDENTIFIED BY 'myPriceTrackerRoot';"
+sudo mysql --defaults-extra-file="$CONFIG_FILE" --execute="GRANT ALL PRIVILEGES ON my_price_tracker_db.* TO 'myPriceTrackerRoot'@'localhost';"
+sudo mysql --defaults-extra-file="$CONFIG_FILE" --execute="FLUSH PRIVILEGES;"
+
+# COMMENT: Add table creation commands below when needed.
+# Example:
+# sudo mysql --defaults-extra-file="$CONFIG_FILE" --execute="USE my_price_tracker_db; CREATE TABLE example (...);"
+
+echo "✅ Database 'my_price_tracker_db' and user 'myPriceTrackerRoot' initialized successfully."

@@ -8,6 +8,7 @@ public class MyPriceTrackerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MyPriceTrackerApplication.class, args);
+		System.out.println("Hello World!");
 	}
 
 }
